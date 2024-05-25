@@ -1,22 +1,27 @@
 package com.khodchenko.plugins
 
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.response.*
-import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 
+data class UserSession(val userId: String) : Principal
+
 fun Application.configureSecurity() {
-    data class MySession(val count: Int = 0)
     install(Sessions) {
-        cookie<MySession>("MY_SESSION") {
+        cookie<UserSession>("USER_SESSION") {
             cookie.extensions["SameSite"] = "lax"
         }
     }
-    routing {
-        get("/session/increment") {
-                val session = call.sessions.get<MySession>() ?: MySession()
-                call.sessions.set(session.copy(count = session.count + 1))
-                call.respondText("Counter is ${session.count}. Refresh to increment.")
+
+    install(Authentication) {
+        session<UserSession> {
+            validate { session ->
+                if (session.userId.isNotEmpty()) session else null
             }
+            challenge {
+                call.respondRedirect("/login")
+            }
+        }
     }
 }

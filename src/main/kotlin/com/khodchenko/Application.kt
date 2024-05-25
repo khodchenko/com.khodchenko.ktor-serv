@@ -2,9 +2,10 @@ package com.khodchenko
 
 import com.khodchenko.plugins.*
 import io.ktor.server.application.*
+import io.ktor.server.netty.*
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    EngineMain.main(args)
 }
 
 fun Application.module() {
