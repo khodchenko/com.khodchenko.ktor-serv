@@ -16,6 +16,9 @@ import org.bson.types.ObjectId
 data class User(
     val username: String,
     val password: String,
+    val nickname: String,
+    val avatar : String,
+    val registrationDate : String
 ) {
     fun toDocument(): Document = Document.parse(Json.encodeToString(this))
 
@@ -26,7 +29,7 @@ data class User(
     }
 }
 
-class UserService(private val database: MongoDatabase) {
+class UserService(database: MongoDatabase) {
     private var collection: MongoCollection<Document>
 
     init {
@@ -43,6 +46,11 @@ class UserService(private val database: MongoDatabase) {
     // Read a user
     suspend fun read(id: String): User? = withContext(Dispatchers.IO) {
         collection.find(Filters.eq("_id", ObjectId(id))).first()?.let(User::fromDocument)
+    }
+
+    // Find user by username
+    suspend fun findByUsername(username: String): User? = withContext(Dispatchers.IO) {
+        collection.find(Filters.eq("username", username)).first()?.let(User::fromDocument)
     }
 
     // Update a user

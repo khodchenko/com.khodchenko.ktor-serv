@@ -42,9 +42,13 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            opacity: 0.5;
         }
-        button:hover {
+        button:hover:enabled {
             background-color: #218838;
+        }
+        button:disabled {
+            cursor: not-allowed;
         }
         .password-wrapper {
             position: relative;
@@ -68,23 +72,40 @@
         .link a:hover {
             text-decoration: underline;
         }
+        .error-message {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>Register</h2>
-    <form action="/register" method="post">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required><br>
+    <div class="error-message" id="error-message"></div>
+    <form id="register-form" onsubmit="return validateAndSubmitForm(event)">
+        <label for="username">Email:</label>
+        <input type="email" id="username" name="username" required>
+        <label for="nickname">Nickname:</label>
+        <input type="text" id="nickname" name="nickname" required>
+        <label for="avatar">Avatar URL:</label>
+        <input type="text" id="avatar" name="avatar" required>
         <label for="password">Password:</label>
         <div class="password-wrapper">
             <input type="password" id="password" name="password" required>
             <span class="toggle-password" onclick="togglePassword()">Show</span>
         </div>
-        <button type="submit">Register</button>
+        <label for="confirm-password">Confirm Password:</label>
+        <div class="password-wrapper">
+            <input type="password" id="confirm-password" name="confirm-password" required>
+            <span class="toggle-password" onclick="toggleConfirmPassword()">Show</span>
+        </div>
+        <button type="submit" id="register-button" disabled>Register</button>
     </form>
     <div class="link">
         <a href="/login">Already have an account? Login</a>
+        <br>
+        <a href="/forgot-password">Forgot password?</a>
     </div>
 </div>
 <script>
@@ -99,6 +120,62 @@
             toggleButton.textContent = 'Show';
         }
     }
+
+    function toggleConfirmPassword() {
+        var confirmPasswordField = document.getElementById('confirm-password');
+        var toggleButton = confirmPasswordField.nextElementSibling;
+        if (confirmPasswordField.type === 'password') {
+            confirmPasswordField.type = 'text';
+            toggleButton.textContent = 'Hide';
+        } else {
+            confirmPasswordField.type = 'password';
+            toggleButton.textContent = 'Show';
+        }
+    }
+
+    function validatePasswords() {
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirm-password').value;
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            return false;
+        }
+        return true;
+    }
+
+    function validateAndSubmitForm(event) {
+        event.preventDefault();
+        if (validatePasswords()) {
+            var form = document.getElementById('register-form');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/register", true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    window.location.href = "/";
+                } else if (xhr.status === 409) {
+                    document.getElementById('error-message').textContent = "That email is already registered";
+                } else {
+                    document.getElementById('error-message').textContent = "An error occurred. Please try again.";
+                }
+            };
+            xhr.send(formData);
+        }
+    }
+
+    document.getElementById('register-form').addEventListener('input', function() {
+        var username = document.getElementById('username').value;
+        var nickname = document.getElementById('nickname').value;
+        var avatar = document.getElementById('avatar').value;
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirm-password').value;
+
+        var registerButton = document.getElementById('register-button');
+        registerButton.disabled = !(username && nickname && avatar && password && confirmPassword);
+        registerButton.style.opacity = registerButton.disabled ? 0.5 : 1;
+    });
+
+    document.getElementById('register-form').onsubmit = validateAndSubmitForm;
 </script>
 </body>
 </html>
