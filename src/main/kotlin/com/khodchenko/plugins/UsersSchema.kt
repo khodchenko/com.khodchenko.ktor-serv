@@ -17,15 +17,27 @@ data class User(
     val username: String,
     val password: String,
     val nickname: String,
-    val avatar : String,
-    val registrationDate : String
+    val avatar: String,
+    val registrationDate: String
 ) {
-    fun toDocument(): Document = Document.parse(Json.encodeToString(this))
+    var id: String? = null
+
+    fun toDocument(): Document {
+        val doc = Document.parse(Json.encodeToString(this))
+        if (id != null) {
+            doc["_id"] = ObjectId(id)
+        }
+        return doc
+    }
 
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
-        fun fromDocument(document: Document): User = json.decodeFromString(document.toJson())
+        fun fromDocument(document: Document): User {
+            val user = json.decodeFromString<User>(document.toJson())
+            user.id = document.getObjectId("_id").toString()
+            return user
+        }
     }
 }
 
@@ -40,7 +52,7 @@ class UserService(database: MongoDatabase) {
     suspend fun create(user: User): String = withContext(Dispatchers.IO) {
         val doc = user.toDocument()
         collection.insertOne(doc)
-        doc["_id"].toString()
+        doc.getObjectId("_id").toString()
     }
 
     // Read a user
