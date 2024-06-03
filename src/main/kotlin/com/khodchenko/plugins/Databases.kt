@@ -6,6 +6,9 @@ import io.ktor.server.application.*
 
 fun Application.configureDatabases() {
     val mongoDatabase = connectToMongoDB()
+
+    createCollectionsIfNotExists(mongoDatabase, "users")
+    createCollectionsIfNotExists(mongoDatabase, "games")
 }
 
 fun Application.connectToMongoDB(): MongoDatabase {
@@ -27,4 +30,10 @@ fun Application.connectToMongoDB(): MongoDatabase {
     }
 
     return database
+}
+
+fun createCollectionsIfNotExists(database: MongoDatabase, collectionName: String) {
+    if (!database.listCollectionNames().contains(collectionName)) {
+        database.createCollection(collectionName)
+    }
 }

@@ -3,6 +3,7 @@ package com.khodchenko.plugins
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.http.content.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -13,8 +14,11 @@ import java.time.format.DateTimeFormatter
 
 fun Application.configureRouting() {
     val userService = UserService(connectToMongoDB())
+    val gameService = GameService(connectToMongoDB())
 
     routing {
+
+        staticResources("/static", "static")
 
         get("/login") {
             call.respondFile(File("src/main/resources/static/login.html"))
@@ -79,6 +83,36 @@ fun Application.configureRouting() {
             val userId = userService.create(newUser)
             call.sessions.set(UserSession(userId = userId))
             call.respondRedirect("/")
+        }
+
+        get("/games") {
+            call.respondFile(File("src/main/resources/static/games.html"))
+        }
+
+        get("/games-data") {
+            val games = gameService.findAll()
+            call.respond(games)
+        }
+
+        get("/game-creation") {
+            call.respondFile(File("src/main/resources/static/createroom.html"))
+        }
+
+        post("/create-game") {
+            val postParameters = call.receiveParameters()
+            val gameName = postParameters["gameName"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing gameName")
+            val password = postParameters["password"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing password")
+            val playerCount = postParameters["playerCount"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid playerCount")
+
+            val creationDate = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+            val newGame = Game(
+                gameName = gameName,
+                password = password,
+                creationDate = creationDate,
+                playerCount = playerCount
+            )
+            val gameId = gameService.create(newGame)
+            call.respond(HttpStatusCode.Created, "Game created with ID: $gameId")
         }
 
         get("/logout") {

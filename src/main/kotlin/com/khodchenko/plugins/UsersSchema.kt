@@ -22,6 +22,7 @@ data class User(
 ) {
     var id: String? = null
 
+
     fun toDocument(): Document {
         val doc = Document.parse(Json.encodeToString(this))
         if (id != null) {
