@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Game Room</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/game-style.css">
     <script src="/static/game.js" defer></script>
     <script src="/static/scripts.js" defer></script>
 </head>
@@ -17,10 +17,16 @@
     </div>
     <button class="logout-button" onclick="logout()">Logout</button>
 </div>
-<div class="container">
-    <h2 id="game-name">Game Name</h2>
-    <p id="game-details">Details about the game will be here</p>
+<div class="game-details" id="game-details">
+    <p id="game-name"></p>
+    <p id="game-info">Details about the game will be here</p>
     <button class="rooms-button" onclick="goToGames()">Back to Games</button>
+    <button class="rooms-button" onclick="deleteGame()">Delete Game</button>
+</div>
+<div class="container">
+    <div class="chat" id="chat">
+        <!-- Chat content will go here -->
+    </div>
 </div>
 </body>
 </html>
