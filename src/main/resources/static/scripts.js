@@ -100,11 +100,60 @@ function goToMainPage() {
 }
 
 function goToRoomCreation(){
-    window.location.href = '/game-creation';
+    window.location.href = '/create-game';
 }
 
-function createRoom(){
-
+async function fetchGames() {
+    try {
+        const response = await fetch('/games-data');
+        if (response.ok) {
+            const games = await response.json();
+            const tableBody = document.getElementById('games-table-body');
+            tableBody.innerHTML = '';
+            games.forEach(game => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><a href="/game/${game.id}">${game.gameName}</a></td>
+                    <td>${game.password}</td>
+                    <td>${game.creationDate}</td>
+                    <td>${game.players.length} / ${game.playerCount}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } else {
+            console.error('Failed to fetch games data');
+        }
+    } catch (error) {
+        console.error('Error fetching games data:', error);
+    }
 }
+
+async function fetchGameData(gameId) {
+    try {
+        const response = await fetch(`/game-data/${gameId}`);
+        if (response.ok) {
+            const gameData = await response.json();
+            document.getElementById('game-name').textContent = gameData.gameName;
+            document.getElementById('game-details').innerHTML = `
+                Game Name: ${gameData.gameName}<br>
+                Password: ${gameData.password}<br>
+                Creation Date: ${gameData.creationDate}<br>
+                Player Count: ${gameData.playerCount}
+            `;
+        } else {
+            console.error('Failed to fetch game data');
+        }
+    } catch (error) {
+        console.error('Error fetching game data:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const urlParts = window.location.pathname.split('/');
+    const gameId = urlParts[urlParts.length - 1]; // Assumes URL is like /game/{id}
+    if (gameId) {
+        fetchGameData(gameId);
+    }
+});
 
 fetchUserData();

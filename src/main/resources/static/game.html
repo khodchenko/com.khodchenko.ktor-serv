@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Room</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/game.js" defer></script>
+    <script src="/static/scripts.js" defer></script>
+</head>
+<body>
+<div class="user-card" id="user-card">
+    <img src="default-avatar.png" alt="Avatar">
+    <div>
+        <span class="username">Hello, Nickname</span>
+        <span class="email">email@example.com</span>
+        <span class="registration-date">Registered on: YYYY-MM-DD</span>
+    </div>
+    <button class="logout-button" onclick="logout()">Logout</button>
+</div>
+<div class="container">
+    <h2 id="game-name">Game Name</h2>
+    <p id="game-details">Details about the game will be here</p>
+    <button class="rooms-button" onclick="goToGames()">Back to Games</button>
+</div>
+</body>
+</html>

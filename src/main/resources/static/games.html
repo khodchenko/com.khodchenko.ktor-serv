@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Games</title>
     <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/games.js" defer></script>
     <script src="/static/scripts.js" defer></script>
 </head>
 <body>
@@ -26,6 +27,7 @@
             <th>Password</th>
             <th>Creation Date</th>
             <th>Player Count</th>
+            <th>Action</th>
         </tr>
         </thead>
         <tbody id="games-table-body">
@@ -33,33 +35,5 @@
         </tbody>
     </table>
 </div>
-<script>
-    document.addEventListener('DOMContentLoaded', fetchGames);
-
-    async function fetchGames() {
-        try {
-            const response = await fetch('/games-data');
-            if (response.ok) {
-                const games = await response.json();
-                const tableBody = document.getElementById('games-table-body');
-                tableBody.innerHTML = '';
-                games.forEach(game => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${game.gameName}</td>
-                        <td>${game.password}</td>
-                        <td>${game.creationDate}</td>
-                        <td>${game.playerCount}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } else {
-                console.error('Failed to fetch games data');
-            }
-        } catch (error) {
-            console.error('Error fetching games data:', error);
-        }
-    }
-</script>
 </body>
 </html>

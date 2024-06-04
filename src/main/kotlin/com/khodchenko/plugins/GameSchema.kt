@@ -16,7 +16,8 @@ data class Game(
     val gameName: String,
     val password: String,
     val creationDate: String,
-    val playerCount : Int
+    val playerCount: Int,
+    val players : List<String> = emptyList(),
 ) {
     var id: String? = null
 

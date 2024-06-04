@@ -17,7 +17,6 @@ fun Application.configureRouting() {
     val gameService = GameService(connectToMongoDB())
 
     routing {
-
         staticResources("/static", "static")
 
         get("/login") {
@@ -30,7 +29,7 @@ fun Application.configureRouting() {
 
         post("/login") {
             val postParameters = call.receiveParameters()
-            val email = postParameters["email"]?.lowercase()  ?: return@post call.respondText(
+            val email = postParameters["email"]?.lowercase() ?: return@post call.respondText(
                 "Missing email",
                 status = HttpStatusCode.Unauthorized
             )
@@ -89,12 +88,7 @@ fun Application.configureRouting() {
             call.respondFile(File("src/main/resources/static/games.html"))
         }
 
-        get("/games-data") {
-            val games = gameService.findAll()
-            call.respond(games)
-        }
-
-        get("/game-creation") {
+        get("/create-game") {
             call.respondFile(File("src/main/resources/static/createroom.html"))
         }
 
@@ -112,7 +106,22 @@ fun Application.configureRouting() {
                 playerCount = playerCount
             )
             val gameId = gameService.create(newGame)
-            call.respond(HttpStatusCode.Created, "Game created with ID: $gameId")
+            call.respondRedirect("/game/$gameId")
+        }
+
+        get("/games-data") {
+            val games = gameService.findAll()
+            call.respond(games)
+        }
+
+        get("/game/{id}") {
+            call.respondFile(File("src/main/resources/static/game.html"))
+        }
+
+        get("/game-data/{id}") {
+            val gameId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
+            val game = gameService.read(gameId) ?: return@get call.respond(HttpStatusCode.NotFound, "Game not found")
+            call.respond(game)
         }
 
         get("/logout") {
