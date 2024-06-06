@@ -15,10 +15,10 @@ import org.bson.types.ObjectId
 data class Game(
     val gameName: String,
     val password: String,
-    val hostId : String,
+    val hostId: String,
     val creationDate: String,
     val playerCount: Int,
-    val players : List<String> = emptyList(),
+    val players: MutableList<String> = mutableListOf()
 ) {
     var id: String? = null
 
@@ -62,6 +62,28 @@ class GameService(database: MongoDatabase) {
     // Find game by gameName
     suspend fun findByGameName(gameName: String): Game? = withContext(Dispatchers.IO) {
         collection.find(Filters.eq("gameName", gameName)).first()?.let(Game::fromDocument)
+    }
+
+    // Add a player to a game
+    suspend fun addPlayerToGame(gameId: String, username: String): Boolean = withContext(Dispatchers.IO) {
+        val game = read(gameId)
+        if (game != null && !game.players.contains(username) && game.players.size < game.playerCount) {
+            game.players.add(username)
+            update(gameId, game)
+            return@withContext true
+        }
+        return@withContext false
+    }
+
+    // Remove a player from a game
+    suspend fun removePlayerFromGame(gameId: String, username: String): Boolean = withContext(Dispatchers.IO) {
+        val game = read(gameId)
+        if (game != null && game.players.contains(username)) {
+            game.players.remove(username)
+            update(gameId, game)
+            return@withContext true
+        }
+        return@withContext false
     }
 
     // Find all games

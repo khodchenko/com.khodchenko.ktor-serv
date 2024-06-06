@@ -125,6 +125,32 @@
                 call.respond(game)
             }
 
+            post("/join-game/{id}") {
+                val gameId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
+                val userSession = call.sessions.get<UserSession>() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                val user = userService.read(userSession.userId) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found")
+
+                val added = gameService.addPlayerToGame(gameId, user.username)
+                if (added) {
+                    call.respond(HttpStatusCode.OK, "Joined game successfully")
+                } else {
+                    call.respond(HttpStatusCode.Conflict, "Unable to join the game")
+                }
+            }
+
+            post("/leave-game/{id}") {
+                val gameId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
+                val userSession = call.sessions.get<UserSession>() ?: return@post call.respond(HttpStatusCode.Unauthorized)
+                val user = userService.read(userSession.userId) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found")
+
+                val removed = gameService.removePlayerFromGame(gameId, user.username)
+                if (removed) {
+                    call.respond(HttpStatusCode.OK, "Left game successfully")
+                } else {
+                    call.respond(HttpStatusCode.Conflict, "Unable to leave the game")
+                }
+            }
+
             delete("/delete-game/{id}") {
                 val gameId = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
                 val game = gameService.read(gameId) ?: return@delete call.respond(HttpStatusCode.NotFound, "Game not found")

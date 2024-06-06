@@ -19,6 +19,36 @@ async function fetchGameData(gameId) {
     }
 }
 
+async function joinGame(gameId) {
+    try {
+        const response = await fetch(`/join-game/${gameId}`, {
+            method: 'POST'
+        });
+        if (response.ok) {
+            console.log('Joined game successfully');
+        } else {
+            console.error('Failed to join game');
+        }
+    } catch (error) {
+        console.error('Error joining game:', error);
+    }
+}
+
+async function leaveGame(gameId) {
+    try {
+        const response = await fetch(`/leave-game/${gameId}`, {
+            method: 'POST'
+        });
+        if (response.ok) {
+            console.log('Left game successfully');
+        } else {
+            console.error('Failed to leave game');
+        }
+    } catch (error) {
+        console.error('Error leaving game:', error);
+    }
+}
+
 async function deleteGame() {
     const urlParts = window.location.pathname.split('/');
     const gameId = urlParts[urlParts.length - 1];
@@ -44,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const gameId = urlParts[urlParts.length - 1]; // Assumes URL is like /game/{id}
     if (gameId) {
         fetchGameData(gameId);
+        joinGame(gameId);
+        window.addEventListener('beforeunload', () => leaveGame(gameId));
+        setInterval(() => fetchGameData(gameId), 5000); // Update every 5 seconds
     }
     fetchUserData();
 });
