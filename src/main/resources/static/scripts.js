@@ -91,8 +91,8 @@ function logout() {
     window.location.href = '/logout';
 }
 
-function goToGames() {
-    window.location.href = '/games';
+function goToRooms() {
+    window.location.href = '/rooms';
 }
 
 function goToMainPage() {
@@ -100,31 +100,31 @@ function goToMainPage() {
 }
 
 function goToRoomCreation(){
-    window.location.href = '/create-game';
+    window.location.href = '/create-room';
 }
 
-async function fetchGames() {
+async function fetchrooms() {
     try {
-        const response = await fetch('/games-data');
+        const response = await fetch('/rooms-data');
         if (response.ok) {
-            const games = await response.json();
-            const tableBody = document.getElementById('games-table-body');
+            const rooms = await response.json();
+            const tableBody = document.getElementById('rooms-table-body');
             tableBody.innerHTML = '';
-            games.forEach(game => {
+            rooms.forEach(room => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><a href="/game/${game.id}">${game.gameName}</a></td>
-                    <td>${game.password}</td>
-                    <td>${game.creationDate}</td>
-                    <td>${game.players.length} / ${game.playerCount}</td>
+                    <td><a href="/room/${room.id}">${room.roomName}</a></td>
+                    <td>${room.password}</td>
+                    <td>${room.creationDate}</td>
+                    <td>${room.players.length} / ${room.playerCount}</td>
                 `;
                 tableBody.appendChild(row);
             });
         } else {
-            console.error('Failed to fetch games data');
+            console.error('Failed to fetch rooms data');
         }
     } catch (error) {
-        console.error('Error fetching games data:', error);
+        console.error('Error fetching rooms data:', error);
     }
 }
 

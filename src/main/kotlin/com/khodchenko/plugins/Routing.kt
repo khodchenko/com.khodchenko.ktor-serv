@@ -14,7 +14,7 @@
 
     fun Application.configureRouting() {
         val userService = UserService(connectToMongoDB())
-        val gameService = GameService(connectToMongoDB())
+        val roomService = RoomService(connectToMongoDB())
 
         routing {
             staticResources("/static", "static")
@@ -84,83 +84,83 @@
                 call.respondRedirect("/")
             }
 
-            get("/games") {
-                call.respondFile(File("src/main/resources/static/games.html"))
+            get("/rooms") {
+                call.respondFile(File("src/main/resources/static/rooms.html"))
             }
 
-            get("/create-game") {
+            get("/create-room") {
                 call.respondFile(File("src/main/resources/static/createroom.html"))
             }
 
-            post("/create-game") {
+            post("/create-room") {
                 val postParameters = call.receiveParameters()
-                val gameName = postParameters["gameName"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing gameName")
+                val roomName = postParameters["roomName"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing roomName")
                 val password = postParameters["password"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing password")
                 val playerCount = postParameters["playerCount"]?.toIntOrNull() ?: return@post call.respond(HttpStatusCode.BadRequest, "Invalid playerCount")
 
                 val creationDate = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-                val newGame = Game(
-                    gameName = gameName,
+                val newRoom = Room(
+                    roomName = roomName,
                     password = password,
                     hostId = call.sessions.get<UserSession>()?.userId.toString(),
                     creationDate = creationDate,
                     playerCount = playerCount
                 )
-                val gameId = gameService.create(newGame)
-                call.respondRedirect("/game/$gameId")
+                val roomId = roomService.create(newRoom)
+                call.respondRedirect("/room/$roomId")
             }
 
-            get("/games-data") {
-                val games = gameService.findAll()
-                call.respond(games)
+            get("/rooms-data") {
+                val rooms = roomService.findAll()
+                call.respond(rooms)
             }
 
-            get("/game/{id}") {
-                call.respondFile(File("src/main/resources/static/game.html"))
+            get("/room/{id}") {
+                call.respondFile(File("src/main/resources/static/room.html"))
             }
 
-            get("/game-data/{id}") {
-                val gameId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
-                val game = gameService.read(gameId) ?: return@get call.respond(HttpStatusCode.NotFound, "Game not found")
-                call.respond(game)
+            get("/room-data/{id}") {
+                val roomId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing or invalid room ID")
+                val room = roomService.read(roomId) ?: return@get call.respond(HttpStatusCode.NotFound, "Room not found")
+                call.respond(room)
             }
 
-            post("/join-game/{id}") {
-                val gameId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
+            post("/join-room/{id}") {
+                val roomId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid room ID")
                 val userSession = call.sessions.get<UserSession>() ?: return@post call.respond(HttpStatusCode.Unauthorized)
                 val user = userService.read(userSession.userId) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found")
 
-                val added = gameService.addPlayerToGame(gameId, user.username)
+                val added = roomService.addPlayerToRoom(roomId, user.username)
                 if (added) {
-                    call.respond(HttpStatusCode.OK, "Joined game successfully")
+                    call.respond(HttpStatusCode.OK, "Joined room successfully")
                 } else {
-                    call.respond(HttpStatusCode.Conflict, "Unable to join the game")
+                    call.respond(HttpStatusCode.Conflict, "Unable to join the room")
                 }
             }
 
-            post("/leave-game/{id}") {
-                val gameId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
+            post("/leave-room/{id}") {
+                val roomId = call.parameters["id"] ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing or invalid room ID")
                 val userSession = call.sessions.get<UserSession>() ?: return@post call.respond(HttpStatusCode.Unauthorized)
                 val user = userService.read(userSession.userId) ?: return@post call.respond(HttpStatusCode.NotFound, "User not found")
 
-                val removed = gameService.removePlayerFromGame(gameId, user.username)
+                val removed = roomService.removePlayerFromRoom(roomId, user.username)
                 if (removed) {
-                    call.respond(HttpStatusCode.OK, "Left game successfully")
+                    call.respond(HttpStatusCode.OK, "Left room successfully")
                 } else {
-                    call.respond(HttpStatusCode.Conflict, "Unable to leave the game")
+                    call.respond(HttpStatusCode.Conflict, "Unable to leave the room")
                 }
             }
 
-            delete("/delete-game/{id}") {
-                val gameId = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing or invalid game ID")
-                val game = gameService.read(gameId) ?: return@delete call.respond(HttpStatusCode.NotFound, "Game not found")
+            delete("/delete-room/{id}") {
+                val roomId = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing or invalid room ID")
+                val room = roomService.read(roomId) ?: return@delete call.respond(HttpStatusCode.NotFound, "Room not found")
                 val userSession = call.sessions.get<UserSession>() ?: return@delete call.respond(HttpStatusCode.Unauthorized)
 
-                if (game.hostId != userSession.userId) {
-                    return@delete call.respond(HttpStatusCode.Forbidden, "You are not authorized to delete this game")
+                if (room.hostId != userSession.userId) {
+                    return@delete call.respond(HttpStatusCode.Forbidden, "You are not authorized to delete this room")
                 }
 
-                gameService.delete(gameId)
+                roomService.delete(roomId)
                 call.respond(HttpStatusCode.NoContent)
             }
 

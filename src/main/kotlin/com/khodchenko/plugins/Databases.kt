@@ -8,7 +8,7 @@ fun Application.configureDatabases() {
     val mongoDatabase = connectToMongoDB()
 
     createCollectionsIfNotExists(mongoDatabase, "users")
-    createCollectionsIfNotExists(mongoDatabase, "games")
+    createCollectionsIfNotExists(mongoDatabase, "rooms")
 }
 
 fun Application.connectToMongoDB(): MongoDatabase {

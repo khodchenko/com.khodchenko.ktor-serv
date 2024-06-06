@@ -12,8 +12,8 @@ import org.bson.Document
 import org.bson.types.ObjectId
 
 @Serializable
-data class Game(
-    val gameName: String,
+data class Room(
+    val roomName: String,
     val password: String,
     val hostId: String,
     val creationDate: String,
@@ -32,71 +32,71 @@ data class Game(
     companion object {
         private val json = Json { ignoreUnknownKeys = true }
 
-        fun fromDocument(document: Document): Game {
-            val game = json.decodeFromString<Game>(document.toJson())
-            game.id = document.getObjectId("_id").toString()
-            return game
+        fun fromDocument(document: Document): Room {
+            val room = json.decodeFromString<Room>(document.toJson())
+            room.id = document.getObjectId("_id").toString()
+            return room
         }
     }
 }
 
-class GameService(database: MongoDatabase) {
+class RoomService(database: MongoDatabase) {
     private var collection: MongoCollection<Document>
 
     init {
-        collection = database.getCollection("games")
+        collection = database.getCollection("rooms")
     }
 
-    // Create new game
-    suspend fun create(game: Game): String = withContext(Dispatchers.IO) {
-        val doc = game.toDocument()
+    // Create new room
+    suspend fun create(room: Room): String = withContext(Dispatchers.IO) {
+        val doc = room.toDocument()
         collection.insertOne(doc)
         doc.getObjectId("_id").toString()
     }
 
-    // Read a game
-    suspend fun read(id: String): Game? = withContext(Dispatchers.IO) {
-        collection.find(Filters.eq("_id", ObjectId(id))).first()?.let(Game::fromDocument)
+    // Read a room
+    suspend fun read(id: String): Room? = withContext(Dispatchers.IO) {
+        collection.find(Filters.eq("_id", ObjectId(id))).first()?.let(Room::fromDocument)
     }
 
-    // Find game by gameName
-    suspend fun findByGameName(gameName: String): Game? = withContext(Dispatchers.IO) {
-        collection.find(Filters.eq("gameName", gameName)).first()?.let(Game::fromDocument)
+    // Find room by roomName
+    suspend fun findByRoomName(roomName: String): Room? = withContext(Dispatchers.IO) {
+        collection.find(Filters.eq("roomName", roomName)).first()?.let(Room::fromDocument)
     }
 
-    // Add a player to a game
-    suspend fun addPlayerToGame(gameId: String, username: String): Boolean = withContext(Dispatchers.IO) {
-        val game = read(gameId)
-        if (game != null && !game.players.contains(username) && game.players.size < game.playerCount) {
-            game.players.add(username)
-            update(gameId, game)
+    // Add a player to a room
+    suspend fun addPlayerToRoom(roomId: String, username: String): Boolean = withContext(Dispatchers.IO) {
+        val room = read(roomId)
+        if (room != null && !room.players.contains(username) && room.players.size < room.playerCount) {
+            room.players.add(username)
+            update(roomId, room)
             return@withContext true
         }
         return@withContext false
     }
 
-    // Remove a player from a game
-    suspend fun removePlayerFromGame(gameId: String, username: String): Boolean = withContext(Dispatchers.IO) {
-        val game = read(gameId)
-        if (game != null && game.players.contains(username)) {
-            game.players.remove(username)
-            update(gameId, game)
+    // Remove a player from a room
+    suspend fun removePlayerFromRoom(roomId: String, username: String): Boolean = withContext(Dispatchers.IO) {
+        val room = read(roomId)
+        if (room != null && room.players.contains(username)) {
+            room.players.remove(username)
+            update(roomId, room)
             return@withContext true
         }
         return@withContext false
     }
 
-    // Find all games
-    suspend fun findAll(): List<Game> = withContext(Dispatchers.IO) {
-        collection.find().map { Game.fromDocument(it) }.toList()
+    // Find all rooms
+    suspend fun findAll(): List<Room> = withContext(Dispatchers.IO) {
+        collection.find().map { Room.fromDocument(it) }.toList()
     }
 
-    // Update a game
-    suspend fun update(id: String, game: Game): Document? = withContext(Dispatchers.IO) {
-        collection.findOneAndReplace(Filters.eq("_id", ObjectId(id)), game.toDocument())
+    // Update a room
+    suspend fun update(id: String, room: Room): Document? = withContext(Dispatchers.IO) {
+        collection.findOneAndReplace(Filters.eq("_id", ObjectId(id)), room.toDocument())
     }
 
-    // Delete a game
+    // Delete a room
     suspend fun delete(id: String): Document? = withContext(Dispatchers.IO) {
         collection.findOneAndDelete(Filters.eq("_id", ObjectId(id)))
     }
