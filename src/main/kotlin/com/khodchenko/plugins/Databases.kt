@@ -9,6 +9,7 @@ fun Application.configureDatabases() {
 
     createCollectionsIfNotExists(mongoDatabase, "users")
     createCollectionsIfNotExists(mongoDatabase, "rooms")
+    createCollectionsIfNotExists(mongoDatabase, "messages")
 }
 
 fun Application.connectToMongoDB(): MongoDatabase {

@@ -1,6 +1,7 @@
 package com.khodchenko
 
 import com.khodchenko.plugins.*
+import configureSockets
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 

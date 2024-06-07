@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Game Room</title>
+    <title>Room</title>
     <link rel="stylesheet" href="/static/style-room.css">
     <script src="/static/room.js" defer></script>
     <script src="/static/scripts.js" defer></script>
@@ -25,7 +25,9 @@
 </div>
 <div class="container">
     <div class="chat" id="chat">
-        <!-- Chat content will go here -->
+        <div id="messages"></div>
+        <input type="text" id="message-input" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
     </div>
 </div>
 </body>

@@ -1,9 +1,26 @@
-async function fetchRoomData(roomId) {
-    try {
-        const response = await fetch(`/room-data/${roomId}`);
-        if (response.ok) {
-            const roomData = await response.json();
-            document.getElementById('room-name').textContent = `room Name: ${roomData.roomName}`;
+const urlParts = window.location.pathname.split('/');
+const roomId = urlParts[urlParts.length - 1];
+const socket = new WebSocket(`ws://${window.location.host}/ws/${roomId}`);
+
+socket.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `[${message.timestamp}] ${message.sender}: ${message.content}`;
+    document.getElementById('messages').appendChild(messageElement);
+};
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const message = input.value;
+    socket.send(message);
+    input.value = '';
+}
+
+function fetchRoomData(roomId) {
+    fetch(`/room-data/${roomId}`)
+        .then(response => response.json())
+        .then(roomData => {
+            document.getElementById('room-name').textContent = `Room Name: ${roomData.roomName}`;
             document.getElementById('room-info').innerHTML = `
                 Password: ${roomData.password}<br>
                 Creation Date: ${roomData.creationDate}<br>
@@ -11,13 +28,19 @@ async function fetchRoomData(roomId) {
                 Players: ${roomData.players.join(", ")}<br>
                 Host: ${roomData.hostId}
             `;
-        } else {
-            console.error('Failed to fetch room data');
-        }
-    } catch (error) {
-        console.error('Error fetching room data:', error);
-    }
+        })
+        .catch(error => console.error('Error fetching room data:', error));
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (roomId) {
+        fetchRoomData(roomId);
+        joinRoom(roomId);
+        window.addEventListener('beforeunload', () => leaveRoom(roomId));
+        setInterval(() => fetchRoomData(roomId), 5000); // Update every 5 seconds
+    }
+    fetchUserData();
+});
 
 async function joinRoom(roomId) {
     try {
@@ -50,15 +73,13 @@ async function leaveRoom(roomId) {
 }
 
 async function deleteRoom() {
-    const urlParts = window.location.pathname.split('/');
-    const roomId = urlParts[urlParts.length - 1];
     if (confirm("Are you sure you want to delete this room?")) {
         try {
             const response = await fetch(`/delete-room/${roomId}`, {
                 method: 'DELETE'
             });
             if (response.ok) {
-                alert("room deleted successfully.");
+                alert("Room deleted successfully.");
                 window.location.href = '/rooms';
             } else {
                 console.error('Failed to delete room');
@@ -68,15 +89,3 @@ async function deleteRoom() {
         }
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const urlParts = window.location.pathname.split('/');
-    const roomId = urlParts[urlParts.length - 1]; // Assumes URL is like /room/{id}
-    if (roomId) {
-        fetchRoomData(roomId);
-        joinRoom(roomId);
-        window.addEventListener('beforeunload', () => leaveRoom(roomId));
-        setInterval(() => fetchRoomData(roomId), 5000); // Update every 5 seconds
-    }
-    fetchUserData();
-});

@@ -103,7 +103,7 @@ function goToRoomCreation(){
     window.location.href = '/create-room';
 }
 
-async function fetchrooms() {
+async function fetchRooms() {
     try {
         const response = await fetch('/rooms-data');
         if (response.ok) {
