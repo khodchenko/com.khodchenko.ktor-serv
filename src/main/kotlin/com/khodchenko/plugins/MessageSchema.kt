@@ -15,6 +15,7 @@ import org.bson.types.ObjectId
 data class Message(
     val roomId: String,
     val sender: String,
+    val senderNickname: String,
     val content: String,
     val timestamp: String
 ) {

@@ -2,10 +2,25 @@ const urlParts = window.location.pathname.split('/');
 const roomId = urlParts[urlParts.length - 1];
 const socket = new WebSocket(`ws://${window.location.host}/ws/${roomId}`);
 
+socket.onopen = function(event) {
+    console.log("Connected to WebSocket server");
+};
+
+socket.onclose = function(event) {
+    console.log("Disconnected from WebSocket server");
+};
+
+socket.onerror = function(event) {
+    console.error("WebSocket error observed:", event);
+};
+
 socket.onmessage = function(event) {
     const message = JSON.parse(event.data);
+    const timestamp = new Date(message.timestamp);
+    const timeString = timestamp.toLocaleTimeString('en-GB', { hour12: false });
     const messageElement = document.createElement('div');
-    messageElement.textContent = `[${message.timestamp}] ${message.sender}: ${message.content}`;
+    messageElement.textContent = `[${timeString}] ${message.senderNickname}: ${message.content}`;
+    console.log('Appending message element:', messageElement);
     document.getElementById('messages').appendChild(messageElement);
 };
 
@@ -14,6 +29,7 @@ function sendMessage() {
     const message = input.value;
     socket.send(message);
     input.value = '';
+    console.log('Message sent:', message);
 }
 
 function fetchRoomData(roomId) {

@@ -1,7 +1,4 @@
-import com.khodchenko.plugins.Message
-import com.khodchenko.plugins.MessageService
-import com.khodchenko.plugins.UserSession
-import com.khodchenko.plugins.connectToMongoDB
+import com.khodchenko.plugins.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
@@ -17,6 +14,8 @@ import java.util.concurrent.ConcurrentHashMap
 fun Application.configureSockets() {
     val rooms = ConcurrentHashMap<String, MutableList<DefaultWebSocketServerSession>>()
     val messageService = MessageService(connectToMongoDB())
+    val userService = UserService(connectToMongoDB())
+
 
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
@@ -31,7 +30,7 @@ fun Application.configureSockets() {
             val session = this
             rooms.computeIfAbsent(roomId) { mutableListOf() }.add(session)
 
-            // Отправить существующие сообщения новому подключенному клиенту
+
             val existingMessages = messageService.findByRoomId(roomId)
             existingMessages.forEach { message ->
                 session.send(Frame.Text(Json.encodeToString(message)))
@@ -40,19 +39,19 @@ fun Application.configureSockets() {
             try {
                 for (frame in incoming) {
                     if (frame is Frame.Text) {
+                        val user = call.sessions.get<UserSession>()
                         val receivedText = frame.readText()
-                        val sender = call.sessions.get<UserSession>()?.userId ?: "Unknown"
+                        val userId = user?.userId ?: "Unknown"
                         val timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-                        val message = Message(roomId, sender, receivedText, timestamp)
+                        val userNickname = userService.read(userId)?.nickname ?: "Unknown"
+                        val message = Message(roomId, userId, userNickname, receivedText, timestamp)
 
                         // Сохранить сообщение в базу данных
                         messageService.create(message)
 
                         // Отправить сообщение всем клиентам в комнате
                         rooms[roomId]?.forEach { otherSession ->
-                            if (otherSession != session) {
-                                otherSession.send(Frame.Text(Json.encodeToString(message)))
-                            }
+                            otherSession.send(Frame.Text(Json.encodeToString(message)))
                         }
                     }
                 }
@@ -62,3 +61,4 @@ fun Application.configureSockets() {
         }
     }
 }
+

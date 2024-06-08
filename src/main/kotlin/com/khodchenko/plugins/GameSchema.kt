@@ -67,12 +67,22 @@ class RoomService(database: MongoDatabase) {
     // Add a player to a room
     suspend fun addPlayerToRoom(roomId: String, username: String): Boolean = withContext(Dispatchers.IO) {
         val room = read(roomId)
-        if (room != null && !room.players.contains(username) && room.players.size < room.playerCount) {
-            room.players.add(username)
-            update(roomId, room)
-            return@withContext true
+        if (room == null) {
+            println("Room not found: $roomId")
+            return@withContext false
         }
-        return@withContext false
+        if (room.players.contains(username)) {
+            println("User already in room: $username")
+            return@withContext false
+        }
+        if (room.players.size >= room.playerCount) {
+            println("Room is full: $roomId")
+            return@withContext false
+        }
+        room.players.add(username)
+        update(roomId, room)
+        println("User $username added to room $roomId")
+        return@withContext true
     }
 
     // Remove a player from a room
