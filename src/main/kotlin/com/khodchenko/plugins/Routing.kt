@@ -15,6 +15,7 @@
     fun Application.configureRouting() {
         val userService = UserService(connectToMongoDB())
         val roomService = RoomService(connectToMongoDB())
+        val messageService = MessageService(connectToMongoDB())
 
         routing {
             staticResources("/static", "static")
@@ -159,7 +160,7 @@
                 if (room.hostId != userSession.userId) {
                     return@delete call.respond(HttpStatusCode.Forbidden, "You are not authorized to delete this room")
                 }
-
+                messageService.deleteByRoomId(roomId)
                 roomService.delete(roomId)
                 call.respond(HttpStatusCode.NoContent)
             }

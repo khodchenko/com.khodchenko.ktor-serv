@@ -21,7 +21,9 @@ socket.onmessage = function(event) {
     const messageElement = document.createElement('div');
     messageElement.textContent = `[${timeString}] ${message.senderNickname}: ${message.content}`;
     console.log('Appending message element:', messageElement);
-    document.getElementById('messages').appendChild(messageElement);
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Прокрутка к последнему сообщению
 };
 
 function sendMessage() {

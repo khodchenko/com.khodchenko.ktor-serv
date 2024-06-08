@@ -17,18 +17,21 @@
     </div>
     <button class="logout-button" onclick="logout()">Logout</button>
 </div>
-<div class="room-details" id="room-details">
-    <p id="room-name"></p>
-    <p id="room-info">Details about the room will be here</p>
-    <button class="rooms-button" onclick="goToRooms()">Back to Rooms</button>
-    <button class="rooms-button" onclick="deleteRoom()">Delete Room</button>
-</div>
-<div class="container">
+<div class="left-container">
+    <div class="room-details" id="room-details">
+        <p id="room-name"></p>
+        <p id="room-info">Details about the room will be here</p>
+        <button class="rooms-button" onclick="goToRooms()">Back to Rooms</button>
+        <button class="rooms-button" onclick="deleteRoom()">Delete Room</button>
+    </div>
     <div class="chat" id="chat">
         <div id="messages"></div>
         <input type="text" id="message-input" placeholder="Type a message...">
         <button onclick="sendMessage()">Send</button>
     </div>
+</div>
+<div class="center-container">
+    <!-- Future content goes here -->
 </div>
 </body>
 </html>

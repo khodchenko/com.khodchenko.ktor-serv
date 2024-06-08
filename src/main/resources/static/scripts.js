@@ -75,9 +75,19 @@ async function fetchUserData() {
         const response = await fetch('/user-data');
         if (response.ok) {
             const userData = await response.json();
+            const date = new Date(userData.registrationDate);
+            const formattedDate = date.toLocaleString('en-GB', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(',', '');
+
             document.querySelector('.username').textContent = `Hello, ${userData.nickname}`;
             document.querySelector('.email').textContent = userData.email;
-            document.querySelector('.registration-date').textContent = `Registered on: ${userData.registrationDate}`;
+            document.querySelector('.registration-date').textContent = `Registered on: ${formattedDate}`;
             document.querySelector('.user-card img').src = userData.avatar || 'default-avatar.png';
         } else {
             console.error('Failed to fetch user data');

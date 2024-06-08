@@ -57,4 +57,9 @@ class MessageService(database: MongoDatabase) {
     suspend fun findByRoomId(roomId: String): List<Message> = withContext(Dispatchers.IO) {
         collection.find(Filters.eq("roomId", roomId)).map { Message.fromDocument(it) }.toList()
     }
+
+    // Удалить сообщения по roomId
+    suspend fun deleteByRoomId(roomId: String) = withContext(Dispatchers.IO) {
+        collection.deleteMany(Filters.eq("roomId", roomId))
+    }
 }
